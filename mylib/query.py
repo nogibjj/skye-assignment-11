@@ -2,20 +2,23 @@ import logging
 from pyspark.sql import SparkSession
 
 # Constants for paths
-INPUT_PATH = "data/transformed_transfer"
+INPUT_PATH = "dbfs:/FileStore/skye-assignment-11/transformed_transfer"
+OUTPUT_PATH = "dbfs:/FileStore/skye-assignment-11/transfer_summary"
 
 def create_spark(app_name="ChessTransfersQueries"):
     """Initialize a Spark session."""
     return SparkSession.builder.appName(app_name).getOrCreate()
 
-def query_data(input_path=INPUT_PATH):
+def query_data(input_path=INPUT_PATH, output_path=OUTPUT_PATH):
     """Run queries on the transformed data."""
     spark = create_spark()
-    logging.info("Loading transformed data...")
-    
-    # Read the transformed data
+
+    # Load the transformed data
+    logging.info(f"Loading transformed data from: {input_path}")
     df = spark.read.csv(input_path, header=True, inferSchema=True)
-    
+    print("Transformed data loaded:")
+    df.show()
+
     # Create a temporary view for SQL queries
     df.createOrReplaceTempView("transfer_view")
 
@@ -27,12 +30,19 @@ def query_data(input_path=INPUT_PATH):
         GROUP BY federation
         ORDER BY transfer_count DESC
     """)
+    print("Query results:")
     transfer_count_df.show()
 
     # Save query results
-    output_path = "data/transfer_summary"
+    logging.info(f"Saving query results to: {output_path}")
     transfer_count_df.write.mode("overwrite").csv(output_path, header=True)
-    print(f"Query results saved to {output_path}")
+    print(f"Query results saved to: {output_path}")
 
 if __name__ == "__main__":
+    # Configure logging
+    logging.basicConfig(level=logging.INFO)
+
+    # Run query processing
+    logging.info("Starting query processing...")
     query_data()
+    logging.info("Query processing completed.")
