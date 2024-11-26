@@ -1,106 +1,127 @@
 [![CI](https://github.com/nogibjj/skye-assignment-10/actions/workflows/cicd.yml/badge.svg)](https://github.com/nogibjj/skye-assignment-10/actions/workflows/cicd.yml)
 
-# Skye Assignment 10: Chess Player Transfers with PySpark
+# Skye Assignment 11 - Databricks Data Pipeline
 
-This project processes chess player transfer data using PySpark. It integrates an ETL pipeline to clean, transform, and query the data efficiently. A CI/CD pipeline is also configured using GitHub Actions to validate the code and ensure all workflows are tested.
+This project demonstrates an **ETL data pipeline** built with **Databricks** using PySpark. The pipeline includes three main steps:
+1. **Extract**: Download a dataset from a public URL and save it to Databricks FileStore (DBFS).
+2. **Load & Transform**: Load the dataset into a PySpark DataFrame, perform transformations, and save the processed data back to DBFS.
+3. **Query**: Perform SQL-based queries on the transformed data and save query results as a CSV file.
 
-## Pyspark script
-The pyspark script can be found [here](https://github.com/nogibjj/skye-assignment-10/blob/main/mylib/etl.py)
+## Requirements
+- Create a data pipeline using Databricks.
+- Include at least one data source and one data sink.
 
-## Output
-The output can be found in [log](https://github.com/nogibjj/skye-assignment-10/blob/main/log/database.log) and [data](https://github.com/nogibjj/skye-assignment-10/tree/main/data)
+## Pipeline Workflow
+### 1. Extract
+- **Source**: [Chess Transfers Dataset](https://github.com/fivethirtyeight/data/blob/master/chess-transfers/transfers.csv)
+- Downloaded and saved to DBFS at: 
+```plaintext
+dbfs:/FileStore/skye-assignment-11/transfer.csv
+```
 
-## Features
+### 2. Transform and Load
+- **Transformations**
+   - Renamed columns.
+   - Filled missing values in the `former_fed` column.
+- **Task**: Transformed data saved at:
+```plaintext
+dbfs:/FileStore/skye-assignment-11/transformed_transfer.csv
+```
 
-1. **ETL Pipeline with PySpark**:
-   - **Extract**: Reads raw data from a CSV file.
-   - **Transform**: Renames columns, handles missing data, and prepares the dataset for querying.
-   - **Load**: Saves the transformed data to a CSV file for further analysis.
+### 3. Query
+- **Query**: Count the number of transfers by `federation`.
+- **Task**: Query results saved as:
+```plaintext
+dbfs:/FileStore/skye-assignment-11/transfer_summary.csv
+```
 
-2. **SQL Queries Using PySpark**:
-   - Performs queries directly on the PySpark DataFrame using Spark SQL.
-   - Example queries include transfer counts by federation and listing all transfers with specific conditions.
+## File Structure
+```plaintext
+skye-assignment-11/
+├── mylib/
+│   ├── extract.py         # Data extraction logic
+│   ├── load.py            # Data loading and transformation logic
+│   ├── query.py           # SQL query logic
+├── main.py                # Orchestrates the pipeline
+├── requirements.txt       # Python dependencies
+├── .github/
+│   └── workflows/
+│       └── cicd.yml       # CI/CD pipeline for validation
+└── README.md              # Documentation
+```
 
-3. **CI/CD Pipeline**:
-   - Automated with GitHub Actions.
-   - Ensures code formatting, linting, and testing of the ETL and query workflows.
+## Setting Up the Pipeline in Databricks
 
-## Workflow
+### **1. Clone the Repository into Databricks**
+1. Navigate to **Workspaces** > **Users** in Databricks.
+2. Click your email ID to open your workspace.
+3. Select **Create** > **Git Folder**.
+4. Paste the repository URL: https://github.com/nogibjj/skye-assignment-11.git.
 
-1. **Data Processing with PySpark**:
-   - Reads the raw dataset from [FiveThirtyEight's dataset](https://github.com/fivethirtyeight/data/blob/master/chess-transfers/transfers.csv).
-   - Applies transformations to rename columns and handle missing data.
-   - Saves the cleaned data to a CSV file (`data/transformed_transfer.csv`).
+### **2. Set Up a Compute Cluster**
+1. Go to the **Compute** section in Databricks.
+2. Click **Create** and choose **Personal Compute**.
+3. Configure the cluster with the following settings:
+- **Runtime**: `16.0 ML (Apache Spark 3.5.0, Scala 2.12)`
+- **Node Type**: `i3.xlarge` (or an appropriate type for your task).
+- **Terminate After**: `4320 minutes` of inactivity.
+4. Attach the cluster to your workspace.
 
-2. **SQL Queries**:
-   - Registers the DataFrame as a SQL temporary view.
-   - Runs Spark SQL queries to analyze the data, such as:
-     - Counting transfers by federation.
-     - Filtering and retrieving specific records.
+### **3. Install Required Libraries**
+1. Navigate to **Compute** > **Libraries** and click **Install New**.
+2. Choose **PyPI** as the library source.
+3. Install the following libraries:
+- `pandas`
+- `pytest`
+- `python-dotenv`
+- `requests`
+4. Confirm installation and ensure the libraries are available for the cluster.
 
-3. **CI/CD Pipeline**:
-   - Validates the codebase using `ruff` for linting and `black` for formatting.
-   - Tests the ETL pipeline and query workflows for correctness.
+### **4. Create ETL Pipeline Jobs**
+1. Navigate to the **Workflows** section and click **Create Job**.
+2. Add tasks for each step of the pipeline as follows:
 
-## Setup Instructions
+#### **Task 1 - Extract**
+- Name: `extract`
+- Type: `Python Script`
+- Source: `Workspace`
+- Script Path: `mylib/extract.py`
+- Cluster: Your configured compute cluster.
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/nogibjj/skye-assignment-10.git
-   cd skye-assignment-10
-   ```
+#### **Task 2 - Load**
+- Name: `Load`
+- Type: `Python Script`
+- Source: `Workspace`
+- Script Path: `mylib/load.py`
+- **Depends On**: `Extract`
 
-2. Install Dependencies:
-   ```bash
-   make install
-   ```
+#### **Task 3 - Query**
+- Name: `Query`
+- Type: `Python Script`
+- Source: `Workspace`
+- Script Path: `mylib/query.py`
+- **Depends On**: `Load`
 
-3. Run the Project:
-    ```bash
-    make run
-    ```
-
-4. Format and Lint the Code:
-    ```bash
-    make format
-    make lint
-    ```
-
-5. Run the CI/CD Pipeline Locally:
-    ```bash
-    make all
-    ```
-
-## CI/CD Pipeline
-
-The CI/CD pipeline is configured using GitHub Actions. It includes the following stages:
-
-1. **Code Formatting**:
-   
-   Enforced with `black` for clean and consistent code formatting.
-
-2. **Linting**:
-   
-   Checked using `ruff` to ensure compliance with Python best practices.
-
-3. **Testing**:
-   
-   Runs the ETL workflow and SQL queries on the PySpark DataFrame to verify correctness.
+### **6. Run the Pipeline**
+1. Navigate to **Workflows** and select your job.
+2. Click **Run Now** to execute the pipeline.
+3. Monitor task execution:
+- The pipeline will run in sequential order: `Extract` > `Load` > `Query`.
+4. Verify the output files in **DBFS**:
+- Extracted Data: 
+```plaintext
+dbfs:/FileStore/skye-assignment-11/transfer.csv
+```
+- Transformed Data: 
+```plaintext
+dbfs:/FileStore/skye-assignment-11/transformed_transfer.csv
+```
+- Query Results: 
+```plaintext
+dbfs:/FileStore/skye-assignment-11/transfer_summary.csv
+```
 
 ## Deliverables
-
-1. **PySpark Script**:
-   
-   Processes the raw dataset using PySpark and saves the results as CSV files.
-
-2. **Transformed Dataset**:
-   
-   Output data saved to `data/transformed_transfer.csv`.
-
-3. **Query Results**:
-   
-   Query results saved to `data/transfer_summary.csv`.
-
-4. **CI/CD Pipeline**:
-   
-   Automated testing, formatting, and linting.
+1. Databricks Notebook or Script: Provided in the mylib/ folder.
+2. Pipeline Outputs: Extracted data, transformed data, and query results saved in DBFS.
+3. CI/CD: GitHub Actions workflow (.github/workflows/cicd.yml) for pipeline validation.
