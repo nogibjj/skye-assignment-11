@@ -2,9 +2,9 @@ import logging
 from pyspark.sql import SparkSession
 
 # Constants for paths
-INPUT_PATH = "dbfs:/FileStore/skye-assignment-11/transformed_transfer/transformed_transfer.csv"
-OUTPUT_PATH = "dbfs:/FileStore/skye-assignment-11/transfer_summary"
-FINAL_FILE = "dbfs:/FileStore/skye-assignment-11/transfer_summary/transfer_summary.csv"
+INPUT_PATH = "dbfs:/FileStore/skye-assignment-11/transformed_transfer.csv"
+OUTPUT_PATH = "dbfs:/FileStore/skye-assignment-11"
+FINAL_FILE = "dbfs:/FileStore/skye-assignment-11/transfer_summary.csv"
 
 def create_spark(app_name="ChessTransfersQueries"):
     """Initialize a Spark session."""
