@@ -3,7 +3,7 @@ from pyspark.sql import SparkSession
 
 # Constants for paths
 DATASET_PATH = "dbfs:/FileStore/skye-assignment-11/transfer.csv"
-OUTPUT_PATH = "dbfs:/FileStore/skye-assignment-11/transformed_transfer"
+OUTPUT_PATH = "dbfs:/FileStore/skye-assignment-11"
 
 def create_spark(app_name="ChessTransfersPipeline"):
     """Initialize a Spark session."""
@@ -31,27 +31,32 @@ def transform_data(df):
 
     # Fill missing values
     transformed_df = transformed_df.fillna({"former_fed": "UNKNOWN"})
-    
     print("Data transformation complete:")
     transformed_df.show()
     return transformed_df
 
 def save_data(df, path=OUTPUT_PATH):
-    """Save the transformed data to the specified output path."""
-    logging.info(f"Saving transformed data to: {path}")
-    df.write.mode("overwrite").csv(path, header=True)
-    print(f"Transformed data saved to: {path}")
+    """Save the transformed data as a single CSV file."""
+    temp_path = f"{path}_temp"
+    final_file = f"{path}/transformed_transfer.csv"
+
+    # Coalesce to a single file
+    df.coalesce(1).write.mode("overwrite").csv(temp_path, header=True)
+
+    # Move the single file to the final location
+    files = dbutils.fs.ls(temp_path)
+    for file in files:
+        if file.path.endswith(".csv"):
+            dbutils.fs.mv(file.path, final_file)
+            break
+
+    # Clean up temporary directory
+    dbutils.fs.rm(temp_path, recurse=True)
+    print(f"Transformed data saved as: {final_file}")
 
 if __name__ == "__main__":
-    # Configure logging
     logging.basicConfig(level=logging.INFO)
-
-    # Initialize Spark
     spark = create_spark()
-
-    # Load, transform, and save the data
-    logging.info("Starting ETL pipeline...")
     raw_df = load_data(spark)
     transformed_df = transform_data(raw_df)
     save_data(transformed_df)
-    logging.info("ETL pipeline completed.")

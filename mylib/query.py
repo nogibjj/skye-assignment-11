@@ -2,8 +2,8 @@ import logging
 from pyspark.sql import SparkSession
 
 # Constants for paths
-INPUT_PATH = "dbfs:/FileStore/skye-assignment-11/transformed_transfer"
-OUTPUT_PATH = "dbfs:/FileStore/skye-assignment-11/transfer_summary"
+INPUT_PATH = "dbfs:/FileStore/skye-assignment-11/transformed_transfer.csv"
+OUTPUT_PATH = "dbfs:/FileStore/skye-assignment-11/transfer_summary.csv"
 
 def create_spark(app_name="ChessTransfersQueries"):
     """Initialize a Spark session."""
@@ -33,16 +33,10 @@ def query_data(input_path=INPUT_PATH, output_path=OUTPUT_PATH):
     print("Query results:")
     transfer_count_df.show()
 
-    # Save query results
-    logging.info(f"Saving query results to: {output_path}")
-    transfer_count_df.write.mode("overwrite").csv(output_path, header=True)
+    # Save the query results as a single CSV file
+    transfer_count_df.coalesce(1).write.mode("overwrite").csv(output_path, header=True)
     print(f"Query results saved to: {output_path}")
 
 if __name__ == "__main__":
-    # Configure logging
     logging.basicConfig(level=logging.INFO)
-
-    # Run query processing
-    logging.info("Starting query processing...")
     query_data()
-    logging.info("Query processing completed.")
