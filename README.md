@@ -1,4 +1,4 @@
-[![CI](https://github.com/nogibjj/skye-assignment-11/actions/workflows/cicd.yml/badge.svg)](https://github.com/nogibjj/skye-assignment-11/actions/workflows/cicd.yml)
+[![CI](https://github.com/nogibjj/skye-assignment-11/actions/workflows/cicd.yaml/badge.svg)](https://github.com/nogibjj/skye-assignment-11/actions/workflows/cicd.yaml)
 
 # Skye Assignment 11 - Databricks Data Pipeline
 
