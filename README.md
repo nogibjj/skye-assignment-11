@@ -81,6 +81,8 @@ skye-assignment-11/
 1. Navigate to the **Workflows** section and click **Create Job**.
 2. Add tasks for each step of the pipeline as follows:
 
+![Craete a task](images/task.jpeg)
+
 #### **Task 1 - Extract**
 - Name: `extract`
 - Type: `Python Script`
