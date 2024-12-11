@@ -104,11 +104,16 @@ skye-assignment-11/
 - Script Path: `mylib/query.py`
 - **Depends On**: `Load`
 
+![Create a piepline](images/three_tasks.jpeg)
+
 ### **6. Run the Pipeline**
 1. Navigate to **Workflows** and select your job.
 2. Click **Run Now** to execute the pipeline.
 3. Monitor task execution:
 - The pipeline will run in sequential order: `Extract` > `Load` > `Query`.
+
+![Create a piepline](images/running.jpeg)
+
 4. Verify the output files in **DBFS**:
 - Extracted Data: 
 ```plaintext
